@@ -1,5 +1,6 @@
 import request from 'supertest';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { Task } from '../models/task.js';
 import { TEAM_A, tokenFor } from './helpers.js';
 import { app } from '../app.js';
 
@@ -16,6 +17,15 @@ describe('POST /api/tasks validation', () => {
       .post('/api/tasks')
       .set('Authorization', auth())
       .send({ title: 'Book venue', dueDate: 'next-ish' });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects a due date in the past', async () => {
+    vi.spyOn(Task, 'create').mockResolvedValue({ title: 'Book venue' });
+    const res = await request(app)
+      .post('/api/tasks')
+      .set('Authorization', auth())
+      .send({ title: 'Book venue', dueDate: '2020-01-01' });
     expect(res.status).toBe(400);
   });
 });
