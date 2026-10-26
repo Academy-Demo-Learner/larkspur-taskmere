@@ -1,0 +1,27 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:8
+        ports: ['27017:27017']
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+        env:
+          MONGODB_URI: mongodb://localhost:27017/taskmere-test
+          JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
+      - run: npm run build --workspace client
